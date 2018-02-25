@@ -110,3 +110,9 @@ def dust(file):
     chB = get_brightness(chB_temp, gamma=1)
     # Creating the RGB matrix (make 3D array and change data type to int)
     return np.dstack((chR, chG, chB))
+
+
+def latlon(array):
+    '''Create a latitude and longitude array from a rgb array.
+    The given array can be for example the color return array'''
+    pass
