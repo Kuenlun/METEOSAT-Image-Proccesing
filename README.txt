@@ -1,4 +1,8 @@
-Converting raw satellite data into images
+**Converting raw satellite data into images**
+The main module is SatImg.py, is where all the functions are
 
-Warnings shown
+I have also added and example of the usage of the package: example.py
+
+
+Warnings shown due to the h5py library
 1 - A future error shows up when reading the hdf file due to the h5py library
