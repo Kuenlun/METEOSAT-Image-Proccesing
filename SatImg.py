@@ -1,7 +1,7 @@
 # Necesary libraries
 import h5py             # For reading HDF5 files
-import numpy as np      # For processing the matrices
-from PIL import Image   # For exporting matrices to images
+import numpy as np      # For working with arrays
+from PIL import Image   # For exporting arrays to images
 import os
 
 
