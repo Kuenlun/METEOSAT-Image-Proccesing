@@ -1,5 +1,5 @@
 import os
-import Sat_Img as sat
+import SatImg as sat
 
 proyect_path = os.getcwd()
 data_path = proyect_path + '\\eumetsat_data'
