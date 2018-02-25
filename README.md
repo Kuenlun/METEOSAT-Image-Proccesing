@@ -8,6 +8,6 @@ I have also added and example of the usage of the package: [**example.py**](exam
 [numpy](http://www.numpy.org/)    For working with arrays  
 [PIL](https://pillow.readthedocs.io/en/latest/)   For exporting arrays to images  
   
-###### Known Errors
+#### Known Errors
 **Warnings shown due to the h5py library**  
 A future error shows up when reading the hdf file due to the h5py library  
