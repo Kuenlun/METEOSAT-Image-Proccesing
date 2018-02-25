@@ -1,7 +1,7 @@
-#####Converting raw satellite data into images#####
-This module has been developed for Python3.6
+# Converting raw satellite data into images
+### This module has been developed for Python3.6
 
---Packages nedded--
+##Packages nedded
 [h5py](http://www.h5py.org/)    # For reading HDF5 files
 [numpy](http://www.numpy.org/)   # For working with arrays
 [PIL](https://pillow.readthedocs.io/en/latest/)     # For exporting arrays to images
