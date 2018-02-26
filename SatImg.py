@@ -112,7 +112,43 @@ def dust(file):
     return np.dstack((chR, chG, chB))
 
 
-def latlon(array):
+def latlon(array, file=None):
     '''Create a latitude and longitude array from a rgb array.
     The given array can be for example the color return array'''
-    pass
+    # First of all we need to know the position of the taken image
+    if file is None:
+        # We asume the array is full-size (3712x3712)
+        pass
+    else:
+        # In case the array has been cutted
+        hdf5_file = h5py.File(file, 'r')
+        south = len(hdf5_file['south_most_line'])
+        east = len(hdf5_file['east_most_pixel'])
+        size = array.shape
+        full_size = 3712
+        north = size[0] + south - 1
+        west = size[1] + east - 1
+
+        up = np.empty((full_size - north, size[1], 3))
+        up[:] = np.nan
+        array = np.concatenate((up, array), axis=0)
+
+        down = np.empty((south - 1, size[1], 3))
+        down[:] = np.nan
+        array = np.concatenate((array, down), axis=0)
+
+        size = array.shape
+        left = np.empty((size[0], full_size - west, 3))
+        left[:] = np.nan
+        array = np.concatenate((left, array), axis=1)
+
+        right = np.empty((size[0], east - 1, 3))
+        right[:] = np.nan
+        array = np.concatenate((array, right), axis=1)
+
+
+proyect_path = os.getcwd()
+data_path = proyect_path + '\\eumetsat_data'
+file_path = data_path + '\\' + 'W_XX-EUMETSAT-Darmstadt,VIS+IR+IMAGERY,MSG2+SEVIRI_C_EUMG_20070904180010.nc'
+color_array = color(file_path)
+latlon(color_array, file=file_path)
