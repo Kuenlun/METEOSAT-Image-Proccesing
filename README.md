@@ -18,14 +18,16 @@ A future error shows up when reading the hdf file due to the h5py library
     -**path** (required): The path of file from the MSG 0 deg with the .nc extension:  
 e.g:    \eumetsat_data\W_XX-EUMETSAT-Darmstadt,VIS+IR+IMAGERY,MSG2+SEVIRI_C_EUMG_20070904180010.nc  
 
+
 ### **color(red='ch3', green='ch2', blue='ch1')**
 Before using it a file must have been read  
 **Input:**  
-    -**red**: The channel we want to be red  
+    -**red**: The channel we want to be read  
     -**green**: The channel we want to be green  
     -**blue**: The channel we want to be blue  
 **Output:**  
     A numpy (n, m, 3) array with the three channels  
+
 
 ### **dust()**
 Before using it a file must have been read  
@@ -48,3 +50,11 @@ Before using it a file must have been read
     -**interpolation**: If interpolation is set to True then a bilinear interpolation will be done  
 **Output:**  
     A numpy (3712, 3712, 3) array transformed to geographical coordinates  
+ 
+ 
+### **create_image(array, path, name='MeteosatImage.jpeg')**
+**Input:**  
+    -**array** (required): The array that is going to be converted into an image  
+    -**path** (required): The path where the image will be saved  
+    -**name**: The name of the image.  
+    JPEG, PNG and TIFF extensions are supported  
