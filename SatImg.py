@@ -1,7 +1,9 @@
+# Libraries
+# Standard library
 import os
 import math
 
-# Necesary libraries
+# Third-party libraries
 import h5py             # For reading HDF5 files
 import numpy as np      # For working with arrays
 from numba import jit   # For speeding the nested loops and arithmetic functions
@@ -57,11 +59,12 @@ def get_temperature(ch, str_ch):
     return (c2 * coefficients[str_ch]['vc'] / np.log(oper) - coefficients[str_ch]['b']) / coefficients[str_ch]['a']
 
 
-def create_image(array, path, name='MeteosatImage', extension='jpeg'):
+def create_image(array, path, name='MeteosatImage.jpeg'):
     '''Create an image given a 3D array (RGB)'''
     os.chdir(path)
-    image_name = name + '.' + extension
+    image_name = name
     Image.fromarray(array.astype('uint8')).save(image_name)
+    print(f'saved: {name}')
 
 
 def color(red='ch3', green='ch2', blue='ch1'):
@@ -301,22 +304,20 @@ def geo2(array):
     return geo_array
 
 
-def latlon(array, file=None, way=1, interpolation=True):
+def latlon(array, way=1, interpolation=True):
     '''Create a latitude and longitude array from a rgb array.
     The given array can be for example the color return array'''
     # First of all we need to know the position of the taken image
-    if file is not None:
+    size = array.shape
+    if size[:2] is not (3712, 3712):
         # In case the array has been cutted fill it with NaNs
-        # until we have the full 3712x3712x3 array
-        hdf5_file = h5py.File(file, 'r')
+        # until we have the full 3712x3712 array
         south = len(hdf5_file['south_most_line'])
         east = len(hdf5_file['east_most_pixel'])
-        size = array.shape
-        full_size = 3712
         north = size[0] + south - 1
         west = size[1] + east - 1
 
-        up = np.empty((full_size - north, size[1], 3))
+        up = np.empty((3712 - north, size[1], 3))
         up[:] = np.nan
         array = np.concatenate((up, array), axis=0)
 
@@ -325,7 +326,7 @@ def latlon(array, file=None, way=1, interpolation=True):
         array = np.concatenate((array, down), axis=0)
 
         size = array.shape
-        left = np.empty((size[0], full_size - west, 3))
+        left = np.empty((size[0], 3712 - west, 3))
         left[:] = np.nan
         array = np.concatenate((left, array), axis=1)
 
