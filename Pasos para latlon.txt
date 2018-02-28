@@ -1,8 +1,0 @@
-Tenemos un array que queremos pasar a latlon
-Suponemos que es full-size
-Aplicamos una transformación
-    Multiplicamos el array según la posición de los pixeles:
-        Aquellos que están en el centro serán multiplicados por 1
-        Aquellos en el extremos serán multiplicados por algo
-        --Hay que sacar una formula
-        tan(sqr((x-1856)^2+(y-1856)^2))
