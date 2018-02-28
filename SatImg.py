@@ -1,14 +1,26 @@
+# Libraries
+# Standard library
 import os
 import math
 
-# Necesary libraries
+# Third-party libraries
 import h5py             # For reading HDF5 files
 import numpy as np      # For working with arrays
 from numba import jit   # For speeding the nested loops and arithmetic functions
 from PIL import Image   # For exporting arrays to images
 
 
-def read_dataset(ch, hdf5_file):
+# Create the HDF file variable
+hdf5_file = None
+
+
+def read_file(file):
+    '''Read the HDF file'''
+    global hdf5_file
+    hdf5_file = h5py.File(file, 'r')
+
+
+def read_dataset(ch):
     '''Read and correct the array values by adding the offset and applying
     the scale factor. These values are in the hdf file and are
     different for each channel array'''
@@ -47,24 +59,23 @@ def get_temperature(ch, str_ch):
     return (c2 * coefficients[str_ch]['vc'] / np.log(oper) - coefficients[str_ch]['b']) / coefficients[str_ch]['a']
 
 
-def create_image(array, path, name='MeteosatImage', extension='jpeg'):
+def create_image(array, path, name='MeteosatImage.jpeg'):
     '''Create an image given a 3D array (RGB)'''
     os.chdir(path)
-    image_name = name + '.' + extension
+    image_name = name
     Image.fromarray(array.astype('uint8')).save(image_name)
+    print(f'saved: {name}')
 
 
-def color(file, red='ch3', green='ch2', blue='ch1'):
+def color(red='ch3', green='ch2', blue='ch1'):
     '''Make an array of the coloured image'''
     # Checkings
     channels = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11']
     if red in channels and green in channels and blue in channels:
-        # Reading the file
-        hdf5_file = h5py.File(file, 'r')
         # Reading the datasets of the channels
-        chR = read_dataset(red, hdf5_file)
-        chG = read_dataset(green, hdf5_file)
-        chB = read_dataset(blue, hdf5_file)
+        chR = read_dataset(red)
+        chG = read_dataset(green)
+        chB = read_dataset(blue)
         # Maping the radiance values from 0 to 255
         chR = get_brightness(chR)
         chG = get_brightness(chG)
@@ -80,14 +91,13 @@ def color(file, red='ch3', green='ch2', blue='ch1'):
             raise NameError(f'Channel "{blue}" is not defined')
 
 
-def dust(file):
+def dust():
     '''Make an array of the dust image'''
-    # Reading the file
-    hdf5_file = h5py.File(file, 'r')
+
     # Reading the datasets of the channels
-    ch7 = read_dataset('ch7', hdf5_file)
-    ch9 = read_dataset('ch9', hdf5_file)
-    ch10 = read_dataset('ch10', hdf5_file)
+    ch7 = read_dataset('ch7')
+    ch9 = read_dataset('ch9')
+    ch10 = read_dataset('ch10')
     # Getting the temperature
     ch7_temp = get_temperature(ch7, 'ch7')
     ch9_temp = get_temperature(ch9, 'ch9')
@@ -132,6 +142,10 @@ r_pol = 6356.5838
 
 @jit(nopython=True)
 def pix2geo(col, row):
+    '''Return the latitude and longitude of an MSG image
+    for a given pair of pixel column and row.
+    (based on the formulas given in Ref. [1])'''
+
     # Calculate viewing angle of the satellite by use of the equation
     # on page 28, Ref [1].
     x = 2**16 * (col - coff) / cfac
@@ -170,6 +184,10 @@ def pix2geo(col, row):
 
 @jit(nopython=True)
 def geo2pix(lati, longi):
+    '''Return the pixel column and line of an MSG image
+    for a given pair of latitude/longitude.
+    (based on the formulas given in Ref. [1]) '''
+
     # Check if the values are sane, otherwise return error values
     if lati < -90.0 or lati > 90.0 or longi < -180.0 or longi > 180.0:
         row = np.nan
@@ -216,7 +234,9 @@ def geo2pix(lati, longi):
 
 @jit(nopython=True)
 def bilinter(array, place):
-    # Bilinear interpolation
+    '''Calculate the bilinear interpolation
+    given an array and some coordinates (float)'''
+
     # Get surounding values
     x = place[0]
     y = place[1]
@@ -238,7 +258,7 @@ def bilinter(array, place):
 
 
 @jit(nopython=True)
-def geo1(array):
+def geo1bilinter(array):
     # Create the empty geo array
     geo_array = np.empty((3712, 3712, 3))
     geo_array[:] = np.nan
@@ -254,7 +274,7 @@ def geo1(array):
 
 
 @jit(nopython=True)
-def geo2(array):
+def geo1(array):
     # Create the empty geo array
     geo_array = np.empty((3712, 3712, 3))
     geo_array[:] = np.nan
@@ -269,7 +289,7 @@ def geo2(array):
 
 
 @jit(nopython=True)
-def geo3(array):
+def geo2(array):
     # Create the empty geo array
     geo_array = np.empty((3712, 3712, 3))
     geo_array[:] = np.nan
@@ -284,22 +304,20 @@ def geo3(array):
     return geo_array
 
 
-def latlon(array, file=None, way=1, interpolation=True):
+def latlon(array, way=1, interpolation=True):
     '''Create a latitude and longitude array from a rgb array.
     The given array can be for example the color return array'''
     # First of all we need to know the position of the taken image
-    if file is not None:
+    size = array.shape
+    if size[:2] is not (3712, 3712):
         # In case the array has been cutted fill it with NaNs
-        # until we have the full 3712x3712x3 array
-        hdf5_file = h5py.File(file, 'r')
+        # until we have the full 3712x3712 array
         south = len(hdf5_file['south_most_line'])
         east = len(hdf5_file['east_most_pixel'])
-        size = array.shape
-        full_size = 3712
         north = size[0] + south - 1
         west = size[1] + east - 1
 
-        up = np.empty((full_size - north, size[1], 3))
+        up = np.empty((3712 - north, size[1], 3))
         up[:] = np.nan
         array = np.concatenate((up, array), axis=0)
 
@@ -308,7 +326,7 @@ def latlon(array, file=None, way=1, interpolation=True):
         array = np.concatenate((array, down), axis=0)
 
         size = array.shape
-        left = np.empty((size[0], full_size - west, 3))
+        left = np.empty((size[0], 3712 - west, 3))
         left[:] = np.nan
         array = np.concatenate((left, array), axis=1)
 
@@ -320,11 +338,11 @@ def latlon(array, file=None, way=1, interpolation=True):
         # satellite image and grab it. This way is the best because
         # we can interpolate the image easily
         if interpolation:
-            geo_array = geo1(array)
+            geo_array = geo1bilinter(array)
         else:
-            geo_array = geo2(array)
+            geo_array = geo1(array)
     elif way == 2:
         # Tell the pixel in the satellite image where to go on the
         # Geo image
-        geo_array = geo3(array)
+        geo_array = geo2(array)
     return geo_array
