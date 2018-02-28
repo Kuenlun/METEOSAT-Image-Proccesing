@@ -8,6 +8,10 @@ from numba import jit   # For speeding the nested loops and arithmetic functions
 from PIL import Image   # For exporting arrays to images
 
 
+def read_file(file):
+    hdf5_file = h5py.File(file, 'r')
+
+
 def read_dataset(ch, hdf5_file):
     '''Read and correct the array values by adding the offset and applying
     the scale factor. These values are in the hdf file and are
@@ -132,6 +136,10 @@ r_pol = 6356.5838
 
 @jit(nopython=True)
 def pix2geo(col, row):
+    '''Return the latitude and longitude of an MSG image
+    for a given pair of pixel column and row.
+    (based on the formulas given in Ref. [1])'''
+
     # Calculate viewing angle of the satellite by use of the equation
     # on page 28, Ref [1].
     x = 2**16 * (col - coff) / cfac
@@ -170,6 +178,10 @@ def pix2geo(col, row):
 
 @jit(nopython=True)
 def geo2pix(lati, longi):
+    '''Return the pixel column and line of an MSG image
+    for a given pair of latitude/longitude.
+    (based on the formulas given in Ref. [1]) '''
+
     # Check if the values are sane, otherwise return error values
     if lati < -90.0 or lati > 90.0 or longi < -180.0 or longi > 180.0:
         row = np.nan
@@ -216,7 +228,9 @@ def geo2pix(lati, longi):
 
 @jit(nopython=True)
 def bilinter(array, place):
-    # Bilinear interpolation
+    '''Calculate the bilinear interpolation
+    given an array and some coordinates (float)'''
+
     # Get surounding values
     x = place[0]
     y = place[1]
@@ -238,7 +252,7 @@ def bilinter(array, place):
 
 
 @jit(nopython=True)
-def geo1(array):
+def geo1bilinter(array):
     # Create the empty geo array
     geo_array = np.empty((3712, 3712, 3))
     geo_array[:] = np.nan
@@ -254,7 +268,7 @@ def geo1(array):
 
 
 @jit(nopython=True)
-def geo2(array):
+def geo1(array):
     # Create the empty geo array
     geo_array = np.empty((3712, 3712, 3))
     geo_array[:] = np.nan
@@ -269,7 +283,7 @@ def geo2(array):
 
 
 @jit(nopython=True)
-def geo3(array):
+def geo2(array):
     # Create the empty geo array
     geo_array = np.empty((3712, 3712, 3))
     geo_array[:] = np.nan
@@ -320,11 +334,11 @@ def latlon(array, file=None, way=1, interpolation=True):
         # satellite image and grab it. This way is the best because
         # we can interpolate the image easily
         if interpolation:
-            geo_array = geo1(array)
+            geo_array = geo1bilinter(array)
         else:
-            geo_array = geo2(array)
+            geo_array = geo1(array)
     elif way == 2:
         # Tell the pixel in the satellite image where to go on the
         # Geo image
-        geo_array = geo3(array)
+        geo_array = geo2(array)
     return geo_array
