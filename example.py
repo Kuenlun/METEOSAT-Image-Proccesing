@@ -13,18 +13,18 @@ file_path = data_path + '\\' + 'W_XX-EUMETSAT-Darmstadt,VIS+IR+IMAGERY,MSG3+SEVI
 sat.read_file(file_path)
 
 # Functions
-color_array = sat.color(file_path)
+color_array = sat.color()
 sat.create_image(color_array, path=images_path, name='Color', extension='jpeg')
 print("Color")
 
-colorGeo1_array = sat.latlon(color_array, file=file_path, way=1, interpolation=True)
+colorGeo1_array = sat.latlon(color_array, way=1, interpolation=True)
 sat.create_image(colorGeo1_array, path=images_path, name='ColorGeo Bilinter', extension='jpeg')
 print("ColorGeo Bilinter")
 
-colorGeo2_array = sat.latlon(color_array, file=file_path, way=1, interpolation=False)
+colorGeo2_array = sat.latlon(color_array, way=1, interpolation=False)
 sat.create_image(colorGeo2_array, path=images_path, name='ColorGeo', extension='jpeg')
 print("ColorGeo")
 
-colorGeo3_array = sat.latlon(color_array, file=file_path, way=2)
+colorGeo3_array = sat.latlon(color_array, way=2)
 sat.create_image(colorGeo3_array, path=images_path, name='ColorGeo Modo 2', extension='jpeg')
 print("ColorGeo Modo 2")

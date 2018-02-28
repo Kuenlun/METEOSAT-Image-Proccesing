@@ -8,11 +8,17 @@ from numba import jit   # For speeding the nested loops and arithmetic functions
 from PIL import Image   # For exporting arrays to images
 
 
+# Create the HDF file variable
+hdf5_file = None
+
+
 def read_file(file):
+    '''Read the HDF file'''
+    global hdf5_file
     hdf5_file = h5py.File(file, 'r')
 
 
-def read_dataset(ch, hdf5_file):
+def read_dataset(ch):
     '''Read and correct the array values by adding the offset and applying
     the scale factor. These values are in the hdf file and are
     different for each channel array'''
@@ -58,17 +64,15 @@ def create_image(array, path, name='MeteosatImage', extension='jpeg'):
     Image.fromarray(array.astype('uint8')).save(image_name)
 
 
-def color(file, red='ch3', green='ch2', blue='ch1'):
+def color(red='ch3', green='ch2', blue='ch1'):
     '''Make an array of the coloured image'''
     # Checkings
     channels = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11']
     if red in channels and green in channels and blue in channels:
-        # Reading the file
-        hdf5_file = h5py.File(file, 'r')
         # Reading the datasets of the channels
-        chR = read_dataset(red, hdf5_file)
-        chG = read_dataset(green, hdf5_file)
-        chB = read_dataset(blue, hdf5_file)
+        chR = read_dataset(red)
+        chG = read_dataset(green)
+        chB = read_dataset(blue)
         # Maping the radiance values from 0 to 255
         chR = get_brightness(chR)
         chG = get_brightness(chG)
@@ -84,14 +88,13 @@ def color(file, red='ch3', green='ch2', blue='ch1'):
             raise NameError(f'Channel "{blue}" is not defined')
 
 
-def dust(file):
+def dust():
     '''Make an array of the dust image'''
-    # Reading the file
-    hdf5_file = h5py.File(file, 'r')
+
     # Reading the datasets of the channels
-    ch7 = read_dataset('ch7', hdf5_file)
-    ch9 = read_dataset('ch9', hdf5_file)
-    ch10 = read_dataset('ch10', hdf5_file)
+    ch7 = read_dataset('ch7')
+    ch9 = read_dataset('ch9')
+    ch10 = read_dataset('ch10')
     # Getting the temperature
     ch7_temp = get_temperature(ch7, 'ch7')
     ch9_temp = get_temperature(ch9, 'ch9')
