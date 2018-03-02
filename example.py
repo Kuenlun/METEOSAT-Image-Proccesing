@@ -13,7 +13,7 @@ sat.read_file(file_path)
 
 # Making the color array
 color_array = sat.color()
-sat.create_image(color_array, images_path, 'Color.png')
+sat.create_image(color_array, images_path, 'Color Overlayed.png')
 
 '''colorgeo1bilinter_array = sat.latlon(color_array)
 sat.create_image(colorgeo1bilinter_array, images_path, 'ColorGeo Bilinter.jpeg')

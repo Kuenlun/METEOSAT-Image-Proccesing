@@ -32,21 +32,25 @@ def read_dataset(ch):
 
 def create_image(array, path, name='MeteosatImage.jpg', overlay=None):
     '''Create an image given a 3D array (RGB)'''
-    img = Image.fromarray(array.astype('uint8'))
-    img = img.convert("RGBA")
+
     # Load the overlay
     os.chdir('overlays')
-    overlay = Image.open("met8_0d_full_latlong_countries.gif")
-    overlay = overlay.convert("RGBA")
-    new_img = Image.blend(img, overlay, 0.75)
+    lay_img = Image.open("msg_0d_full_ir_latlong_countries.gif")
+    # Apply scaling factor of 255
+    lay_array = np.array(lay_img)
+    lay_array = lay_array / lay_array.max() * 255
+    # Extend the array so it is like a RGBA image
+    lay_array = np.repeat(lay_array[:, :, np.newaxis], 4, axis=2)
+    # Aply alpha reducing factor
+    lay_array[:, :, 3] = lay_array[:, :, 3] * 0.35
+    # Create an image from the overlay array
+    lay_img_alpha = Image.fromarray(lay_array.astype('uint8'))
+    # Create an image from the array and convert it to RGBA
+    img = Image.fromarray(array.astype('uint8')).convert('RGBA')
+
     os.chdir(path)
-    new_img.save(name)
+    Image.alpha_composite(img, lay_img_alpha).save(name)
     print(f'saved: {name}')
-    '''
-    background = background.convert("RGBA")
-    new_img = Image.blend(background, overlay, 0.5)
-    new_img.save("new.png","PNG")
-    '''
 
 
 def get_brightness(ch, gamma=1):
