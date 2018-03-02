@@ -13,9 +13,9 @@ sat.read_file(file_path)
 
 # Making the color array
 color_array = sat.color()
-sat.create_image(color_array, images_path, 'Color.jpeg')
+sat.create_image(color_array, images_path, 'Color.png')
 
-colorgeo1bilinter_array = sat.latlon(color_array)
+'''colorgeo1bilinter_array = sat.latlon(color_array)
 sat.create_image(colorgeo1bilinter_array, images_path, 'ColorGeo Bilinter.jpeg')
 
 colorgeo1_array = sat.latlon(color_array, interpolation=False)
@@ -37,3 +37,4 @@ sat.create_image(dustgeo1_array, images_path, 'DustGeo.jpeg')
 
 dustgeo2_array = sat.latlon(dust_array, way=2)
 sat.create_image(dustgeo2_array, images_path, 'DustGeo Modo 2.jpeg')
+'''

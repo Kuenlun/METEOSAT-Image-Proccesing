@@ -30,6 +30,25 @@ def read_dataset(ch):
     return (array + offset) * scale
 
 
+def create_image(array, path, name='MeteosatImage.jpg', overlay=None):
+    '''Create an image given a 3D array (RGB)'''
+    img = Image.fromarray(array.astype('uint8'))
+    img = img.convert("RGBA")
+    # Load the overlay
+    os.chdir('overlays')
+    overlay = Image.open("met8_0d_full_latlong_countries.gif")
+    overlay = overlay.convert("RGBA")
+    new_img = Image.blend(img, overlay, 0.75)
+    os.chdir(path)
+    new_img.save(name)
+    print(f'saved: {name}')
+    '''
+    background = background.convert("RGBA")
+    new_img = Image.blend(background, overlay, 0.5)
+    new_img.save("new.png","PNG")
+    '''
+
+
 def get_brightness(ch, gamma=1):
     '''Get the brightness of the pixels given the temperature'''
     return 255 * ((ch - ch.min()) / (ch.max() - ch.min()))**(1 / gamma)
@@ -57,14 +76,6 @@ def get_temperature(ch, str_ch):
     oper = c1 * coefficients[str_ch]['vc']**3 / ch + 1
     oper[np.isinf(oper)] = np.nan
     return (c2 * coefficients[str_ch]['vc'] / np.log(oper) - coefficients[str_ch]['b']) / coefficients[str_ch]['a']
-
-
-def create_image(array, path, name='MeteosatImage.jpeg'):
-    '''Create an image given a 3D array (RGB)'''
-    os.chdir(path)
-    image_name = name
-    Image.fromarray(array.astype('uint8')).save(image_name)
-    print(f'saved: {name}')
 
 
 def color(red='ch3', green='ch2', blue='ch1'):
