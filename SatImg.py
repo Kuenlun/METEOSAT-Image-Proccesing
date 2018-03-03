@@ -32,7 +32,7 @@ def read_dataset(ch):
     return (array + offset) * scale
 
 
-def overlay(array, layer, alpha):
+def overlay(array, layer, alpha, black):
     '''Given an array, an alpha coeficient and the type of overlay
     we want to make, return a modified aray'''
 
@@ -80,14 +80,17 @@ def overlay(array, layer, alpha):
     lay_array = lay_array / lay_array.max()
     # Apply alpha
     # Factor is between 0 and 1, being 0 totally transparent
-    array[lay_array == 1] = array[lay_array == 1] * (1 - alpha) + 255 * alpha
+    if black:
+        array[lay_array == 1] = array[lay_array == 1] * (1 - alpha) + 0 * alpha
+    else:
+        array[lay_array == 1] = array[lay_array == 1] * (1 - alpha) + 255 * alpha
     return array
 
 
-def create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35):
+def create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35, black=False):
     '''Create an image given a 3D array (RGB)'''
     if layer is not None:
-        array = overlay(array, layer, alpha)
+        array = overlay(array, layer, alpha, black)
     os.chdir(path)
     Image.fromarray(array.astype('uint8')).save(name)
     print(f'saved: {name}')

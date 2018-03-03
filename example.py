@@ -26,13 +26,13 @@ sat.create_image(colorgeo2_array, images_path, 'ColorGeo Modo 2.jpeg', layer='ge
 
 # Making the dust array
 dust_array = sat.dust()
-sat.create_image(dust_array, images_path, 'Dust.jpeg', layer='countries', alpha=0.35)
+sat.create_image(dust_array, images_path, 'Dust.jpeg', layer='countries', alpha=0.35, black=True)
 
 dustgeo1bilinter_array = sat.latlon(dust_array)
-sat.create_image(dustgeo1bilinter_array, images_path, 'DustGeo Bilinter.jpeg', layer='geo-countries', alpha=0.35)
+sat.create_image(dustgeo1bilinter_array, images_path, 'DustGeo Bilinter.jpeg', layer='geo-countries', alpha=0.35, black=True)
 
 dustgeo1_array = sat.latlon(dust_array, interpolation=False)
-sat.create_image(dustgeo1_array, images_path, 'DustGeo.jpeg', layer='geo-countries', alpha=0.35)
+sat.create_image(dustgeo1_array, images_path, 'DustGeo.jpeg', layer='geo-countries', alpha=0.35, black=True)
 
 dustgeo2_array = sat.latlon(dust_array, way=2)
-sat.create_image(dustgeo2_array, images_path, 'DustGeo Modo 2.jpeg', layer='geo-countries', alpha=0.35)
+sat.create_image(dustgeo2_array, images_path, 'DustGeo Modo 2.jpeg', layer='geo-countries', alpha=0.35, black=True)
