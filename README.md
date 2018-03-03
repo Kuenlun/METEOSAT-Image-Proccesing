@@ -56,8 +56,7 @@ Before using it a file must have been read
 ### **create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35, black=False)**
 **Input:**  
     -**array** (required): The array that is going to be converted into an image  
-    -**path** (required): The path where the image will be saved  
-    -**name**: The name of the image.  
+    -**name**(required): The name and the path of the image including extension  
     -**layer**: The overlay you want to add to the image  
     -**alpha**: The transparency of the overlay  
     -**black**: If you want the overlay to be black  
