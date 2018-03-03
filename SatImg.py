@@ -86,12 +86,12 @@ def overlay(array, layer, alpha, black):
     return array
 
 
-def create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35, black=False):
+def create_image(array, name='MeteosatImage.jpg', layer=None, alpha=0.35, black=False):
     '''Create an image given a 3D array (RGB)'''
     if layer is not None:
         array = overlay(array, layer, alpha, black)
-    Image.fromarray(array.astype('uint8')).save(path + '\\' + name)
-    print(f'saved: {name}')
+    Image.fromarray(array.astype('uint8')).save(name)
+    print('saved: {}'.format(name.split('\\')[-1]))
 
 
 def get_brightness(ch, gamma=1):
