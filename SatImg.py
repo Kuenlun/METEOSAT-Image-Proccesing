@@ -10,6 +10,8 @@ from numba import jit   # For speeding the nested loops and arithmetic functions
 from PIL import Image   # For exporting arrays to images
 
 
+directory = os.getcwd()
+
 # Create the HDF file variable
 hdf5_file = None
 
@@ -30,15 +32,17 @@ def read_dataset(ch):
     return (array + offset) * scale
 
 
-def overlay(array, layer='coast', alpha=0.35):
+def overlay(array, layer, alpha):
     '''Given an array, an alpha coeficient and the type of overlay
     we want to make, return a modified aray'''
+
+    # Change to the main directory
+    os.chdir(directory)
 
     # Load the overlay
     os.chdir('overlays')
     if layer[:3] == 'geo':
         geo = True
-        layer = layer[4:]
     else:
         geo = False
 
@@ -50,16 +54,21 @@ def overlay(array, layer='coast', alpha=0.35):
         lay_img = Image.open("msg_0d_full_ir_latlong.gif")
     elif layer == 'countries-latlon':
         lay_img = Image.open("msg_0d_full_ir_latlong_countries.gif")
+    elif layer == 'geo-coast':
+        lay_img = Image.open("geo-coast.gif")
+    elif layer == 'geo-countries':
+        lay_img = Image.open("geo-countries.gif")
+    elif layer == 'geo-coast-latlon':
+        lay_img = Image.open("geo-coast-latlon.gif")
+    elif layer == 'geo-countries-latlon':
+        lay_img = Image.open("geo-countries-latlon.gif")
     else:
         print('Error: overlay bad introduced')
-
     # Convert overlay image into numpy array
     lay_array = np.array(lay_img)
-    lay_array = np.expand_dims(lay_array, axis=2)
-
     # Cut the lay_array in case the array have been cropped
     size = array.shape
-    if size[:2] != (3712, 3712):
+    if size[:2] != (3712, 3712) and not geo:
         # Get array dimensions and position
         south = len(hdf5_file['south_most_line'])
         east = len(hdf5_file['east_most_pixel'])
@@ -68,15 +77,9 @@ def overlay(array, layer='coast', alpha=0.35):
         south = 3712 - south
         east = 3712 - east
         lay_array = lay_array[north:south, west:east]
-
-    if geo:
-        lay_array = latlon(lay_array, interpolation=False)
-        lay_array[np.isnan(lay_array)] = 0
     lay_array = lay_array / lay_array.max()
-
     # Apply alpha
     # Factor is between 0 and 1, being 0 totally transparent
-    lay_array = np.squeeze(lay_array, axis=2)
     array[lay_array == 1] = array[lay_array == 1] * (1 - alpha) + 255 * alpha
     return array
 
