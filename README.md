@@ -53,9 +53,12 @@ Before using it a file must have been read
     A numpy (3712, 3712, 3) array transformed to geographical coordinates  
  
  
-### **create_image(array, path, name='MeteosatImage.jpeg')**
+### **create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35, black=False)**
 **Input:**  
     -**array** (required): The array that is going to be converted into an image  
     -**path** (required): The path where the image will be saved  
     -**name**: The name of the image.  
-    JPEG, PNG and TIFF extensions are supported  
+    -**layer**: The overlay you want to add to the image  
+    -**alpha**: The transparency of the overlay  
+    -**black**: If you want the overlay to be black  
+    JPEG, PNG, GIF and TIFF extensions are supported  
