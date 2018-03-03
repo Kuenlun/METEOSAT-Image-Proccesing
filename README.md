@@ -7,6 +7,7 @@ I have also added and example of the usage of the package: [**example.py**](exam
 [h5py](http://www.h5py.org/)    For reading HDF5 files  
 [numpy](http://www.numpy.org/)    For working with arrays  
 [PIL](https://pillow.readthedocs.io/en/latest/)   For exporting arrays to images  
+[Numba](https://numba.pydata.org/)  For speeding up the transformation to geographical coordinates  
   
 ### Known Errors
 **Warnings shown due to the h5py library**  
