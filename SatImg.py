@@ -30,26 +30,63 @@ def read_dataset(ch):
     return (array + offset) * scale
 
 
-def create_image(array, path, name='MeteosatImage.jpg', overlay=None):
-    '''Create an image given a 3D array (RGB)'''
+def overlay(array, layer='coast', alpha=0.35):
+    '''Given an array, an alpha coeficient and the type of overlay
+    we want to make, return a modified aray'''
 
     # Load the overlay
     os.chdir('overlays')
-    lay_img = Image.open("msg_0d_full_ir_latlong_countries.gif")
-    # Apply scaling factor of 255
-    lay_array = np.array(lay_img)
-    lay_array = lay_array / lay_array.max() * 255
-    # Extend the array so it is like a RGBA image
-    lay_array = np.repeat(lay_array[:, :, np.newaxis], 4, axis=2)
-    # Aply alpha reducing factor
-    lay_array[:, :, 3] = lay_array[:, :, 3] * 0.35
-    # Create an image from the overlay array
-    lay_img_alpha = Image.fromarray(lay_array.astype('uint8'))
-    # Create an image from the array and convert it to RGBA
-    img = Image.fromarray(array.astype('uint8')).convert('RGBA')
+    if layer[:3] == 'geo':
+        geo = True
+        layer = layer[4:]
+    else:
+        geo = False
 
+    if layer == 'coast':
+        lay_img = Image.open("msg_0d_full_ir.gif")
+    elif layer == 'countries':
+        lay_img = Image.open("msg_0d_full_ir_countries.gif")
+    elif layer == 'coast-latlon':
+        lay_img = Image.open("msg_0d_full_ir_latlong.gif")
+    elif layer == 'countries-latlon':
+        lay_img = Image.open("msg_0d_full_ir_latlong_countries.gif")
+    else:
+        print('Error: overlay bad introduced')
+
+    # Convert overlay image into numpy array
+    lay_array = np.array(lay_img)
+    lay_array = np.expand_dims(lay_array, axis=2)
+
+    # Cut the lay_array in case the array have been cropped
+    size = array.shape
+    if size[:2] != (3712, 3712):
+        # Get array dimensions and position
+        south = len(hdf5_file['south_most_line'])
+        east = len(hdf5_file['east_most_pixel'])
+        north = 3712 - (size[0] + south)
+        west = 3712 - (size[1] + east)
+        south = 3712 - south
+        east = 3712 - east
+        lay_array = lay_array[north:south, west:east]
+
+    if geo:
+        lay_array = latlon(lay_array, interpolation=False)
+        lay_array[np.isnan(lay_array)] = 0
+    lay_array = lay_array / lay_array.max()
+
+    # Apply alpha
+    # Factor is between 0 and 1, being 0 totally transparent
+    lay_array = np.squeeze(lay_array, axis=2)
+    array[lay_array == 1] = array[lay_array == 1] * (1 - alpha) + 255 * alpha
+    return array
+
+
+def create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35):
+    '''Create an image given a 3D array (RGB)'''
+    if layer is not None:
+        array = overlay(array, layer, alpha)
     os.chdir(path)
-    Image.alpha_composite(img, lay_img_alpha).save(name)
+    Image.fromarray(array.astype('uint8')).save(name)
     print(f'saved: {name}')
 
 
@@ -275,7 +312,8 @@ def bilinter(array, place):
 @jit(nopython=True)
 def geo1bilinter(array):
     # Create the empty geo array
-    geo_array = np.empty((3712, 3712, 3))
+    size = array.shape
+    geo_array = np.empty(size)
     geo_array[:] = np.nan
     for row in range(3712):
         for col in range(3712):
@@ -291,7 +329,8 @@ def geo1bilinter(array):
 @jit(nopython=True)
 def geo1(array):
     # Create the empty geo array
-    geo_array = np.empty((3712, 3712, 3))
+    size = array.shape
+    geo_array = np.empty(size)
     geo_array[:] = np.nan
     for row in range(3712):
         for col in range(3712):
@@ -306,7 +345,8 @@ def geo1(array):
 @jit(nopython=True)
 def geo2(array):
     # Create the empty geo array
-    geo_array = np.empty((3712, 3712, 3))
+    size = array.shape
+    geo_array = np.empty(size)
     geo_array[:] = np.nan
     for row in range(3712):
         for col in range(3712):
@@ -324,7 +364,7 @@ def latlon(array, way=1, interpolation=True):
     The given array can be for example the color return array'''
     # First of all we need to know the position of the taken image
     size = array.shape
-    if size[:2] is not (3712, 3712):
+    if size[:2] != (3712, 3712):
         # In case the array has been cutted fill it with NaNs
         # until we have the full 3712x3712 array
         south = len(hdf5_file['south_most_line'])
@@ -332,20 +372,20 @@ def latlon(array, way=1, interpolation=True):
         north = size[0] + south - 1
         west = size[1] + east - 1
 
-        up = np.empty((3712 - north, size[1], 3))
+        up = np.empty((3712 - north, size[1], size[2]))
         up[:] = np.nan
         array = np.concatenate((up, array), axis=0)
 
-        down = np.empty((south - 1, size[1], 3))
+        down = np.empty((south - 1, size[1], size[2]))
         down[:] = np.nan
         array = np.concatenate((array, down), axis=0)
 
         size = array.shape
-        left = np.empty((size[0], 3712 - west, 3))
+        left = np.empty((size[0], 3712 - west, size[2]))
         left[:] = np.nan
         array = np.concatenate((left, array), axis=1)
 
-        right = np.empty((size[0], east - 1, 3))
+        right = np.empty((size[0], east - 1, size[2]))
         right[:] = np.nan
         array = np.concatenate((array, right), axis=1)
     if way == 1:

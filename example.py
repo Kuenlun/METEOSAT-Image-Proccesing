@@ -10,10 +10,10 @@ file_path = data_path + '\\' + 'W_XX-EUMETSAT-Darmstadt,VIS+IR+IMAGERY,MSG3+SEVI
 # Tell SatImg to read the HDF file
 sat.read_file(file_path)
 
-
 # Making the color array
-color_array = sat.color()
-sat.create_image(color_array, images_path, 'Color Overlayed.png')
+color_array = sat.dust()
+geocolor = sat.latlon(color_array, interpolation=False)
+sat.create_image(geocolor, images_path, 'Colorido.jpeg', layer='geo-countries', alpha=1)
 
 '''colorgeo1bilinter_array = sat.latlon(color_array)
 sat.create_image(colorgeo1bilinter_array, images_path, 'ColorGeo Bilinter.jpeg')
