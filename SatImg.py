@@ -10,7 +10,7 @@ from numba import jit   # For speeding the nested loops and arithmetic functions
 from PIL import Image   # For exporting arrays to images
 
 
-directory = os.getcwd()
+main_path = os.getcwd()
 
 # Create the HDF file variable
 hdf5_file = None
@@ -37,31 +37,30 @@ def overlay(array, layer, alpha, black):
     we want to make, return a modified aray'''
 
     # Change to the main directory
-    os.chdir(directory)
+    overlay_path = main_path + '\\overlays\\'
 
     # Load the overlay
-    os.chdir('overlays')
     if layer[:3] == 'geo':
         geo = True
     else:
         geo = False
 
     if layer == 'coast':
-        lay_img = Image.open("msg_0d_full_ir.gif")
+        lay_img = Image.open(overlay_path + 'msg_0d_full_ir.gif')
     elif layer == 'countries':
-        lay_img = Image.open("msg_0d_full_ir_countries.gif")
+        lay_img = Image.open(overlay_path + 'msg_0d_full_ir_countries.gif')
     elif layer == 'coast-latlon':
-        lay_img = Image.open("msg_0d_full_ir_latlong.gif")
+        lay_img = Image.open(overlay_path + 'msg_0d_full_ir_latlong.gif')
     elif layer == 'countries-latlon':
-        lay_img = Image.open("msg_0d_full_ir_latlong_countries.gif")
+        lay_img = Image.open(overlay_path + 'msg_0d_full_ir_latlong_countries.gif')
     elif layer == 'geo-coast':
-        lay_img = Image.open("geo-coast.gif")
+        lay_img = Image.open(overlay_path + 'geo-coast.gif')
     elif layer == 'geo-countries':
-        lay_img = Image.open("geo-countries.gif")
+        lay_img = Image.open(overlay_path + 'geo-countries.gif')
     elif layer == 'geo-coast-latlon':
-        lay_img = Image.open("geo-coast-latlon.gif")
+        lay_img = Image.open(overlay_path + 'geo-coast-latlon.gif')
     elif layer == 'geo-countries-latlon':
-        lay_img = Image.open("geo-countries-latlon.gif")
+        lay_img = Image.open(overlay_path + 'geo-countries-latlon.gif')
     else:
         print('Error: overlay bad introduced')
     # Convert overlay image into numpy array
@@ -91,8 +90,7 @@ def create_image(array, path, name='MeteosatImage.jpg', layer=None, alpha=0.35, 
     '''Create an image given a 3D array (RGB)'''
     if layer is not None:
         array = overlay(array, layer, alpha, black)
-    os.chdir(path)
-    Image.fromarray(array.astype('uint8')).save(name)
+    Image.fromarray(array.astype('uint8')).save(path + '\\' + name)
     print(f'saved: {name}')
 
 
